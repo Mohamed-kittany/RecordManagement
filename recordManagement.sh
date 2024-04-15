@@ -29,7 +29,7 @@ CHOSEN_RECORD_NAME=""
 # Stores the amount or value associated with the chosen record.
 CHOSEN_RECORD_AMOUNT=""
 # Indicates a specific condition's status (e.g., validation passed or failed).
-CHECK_FLAG=0
+INVALID_SELECTION_FLAG=0
 # Flags if exactly one unique record match has been found (initially assumes no match).
 ONE_RECORD_MATCH=1
 ########################################################################################################################
@@ -158,7 +158,7 @@ searchRecord() {
     local lineCount=$(echo "$results" | wc -l)
     CHOSEN_RECORD_NAME=""
     CHOSEN_RECORD_AMOUNT=""
-    CHECK_FLAG=0
+    INVALID_SELECTION_FLAG=0
     ONE_RECORD_MATCH=1
 
     # Check if any results were found
@@ -198,7 +198,7 @@ searchRecord() {
                     echo -e "${RED}Invalid selection.${NO_COLOR}"
                     logEvent "Search Record" "Failure" "User made an invalid selection for '$keyWord'"
                     # Since the functon has two return value = 1, here we differentiate the second return value from the first with this flag variable.
-                    CHECK_FLAG=1
+                    INVALID_SELECTION_FLAG=1
                     return 1
                 fi
             fi
@@ -321,7 +321,7 @@ addRecord() {
     local searchResult=$? # Capture the return status of searchRecord (0 | 1)
     
     if (( "$searchResult" == 1 )); then
-        if (( CHECK_FLAG == 0 )); then
+        if (( INVALID_SELECTION_FLAG == 0 )); then
             echo "${recordName},${recordAmount}" >> "$FILENAME"
             logEvent "Add Record" "New record added: '$recordName' with amount '$recordAmount'"
             echo -e "${GREEN}Record added successfully.${NO_COLOR}"
@@ -381,7 +381,7 @@ deleteRecord() {
     local searchResult=$? # Capture the return status of searchRecord (0 | 1)
 
     if (( searchResult == 1 )); then
-        if (( CHECK_FLAG == 0 )); then
+        if (( INVALID_SELECTION_FLAG == 0 )); then
             echo -e "${RED}Error: Record not found.${NO_COLOR}"
             logEvent "Delete Record" "Failure" "Record not found"
         fi
@@ -399,7 +399,6 @@ deleteRecord() {
     if (( newAmount > 0 )); then
         # Update the record with the new amount
         updateRecordAmount "$CHOSEN_RECORD_NAME" "$newAmount" "1"
-        echo -e "${GREEN}Record updated successfully.${NO_COLOR}"
         logEvent "Delete Record" "Success" "Record updated"
     else
         # Delete the record entirely
